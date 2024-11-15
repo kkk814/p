@@ -1,0 +1,65 @@
+-- Create Department table
+CREATE TABLE Department (
+    dno SERIAL PRIMARY KEY,       -- Unique department identifier
+    dname VARCHAR(255),           -- Department name
+    location VARCHAR(255)         -- Location of the department
+);
+
+-- Create Professor table
+CREATE TABLE Professor (
+    prof_no SERIAL PRIMARY KEY,   -- Unique professor identifier
+    prof_name VARCHAR(255),       -- Professor's name
+    designation VARCHAR(255),     -- Professor's designation (e.g., Assistant Professor, Associate Professor)
+    salary DECIMAL(10, 2),        -- Professor's salary
+    dno INT,                      -- Foreign key referencing Department
+    CONSTRAINT fk_department FOREIGN KEY (dno) REFERENCES Department(dno) ON DELETE CASCADE
+);
+
+-- Insert records into Department table
+INSERT INTO Department (dname, location)
+VALUES
+('Computer Science', 'New York'),
+('Mathematics', 'California'),
+('Physics', 'Texas'),
+('Electrical Engineering', 'Florida');
+
+-- Insert records into Professor table
+INSERT INTO Professor (prof_name, designation, salary, dno)
+VALUES
+('John Smith', 'Assistant Professor', 75000, 1),
+('Alice Johnson', 'Associate Professor', 90000, 1),
+('Bob Brown', 'Professor', 110000, 2),
+('Charlie Davis', 'Assistant Professor', 68000, 3),
+('David Wilson', 'Professor', 120000, 1),
+('Eva White', 'Lecturer', 55000, 4);
+
+--1
+SELECT AVG(salary) AS average_salary
+FROM Professor;
+
+--2
+SELECT *
+FROM Department
+WHERE location = 'New York';
+
+--3
+SELECT *
+FROM Professor
+WHERE prof_name LIKE '%r';
+
+--4
+SELECT p.prof_no, p.prof_name, p.designation, p.salary, d.dname
+FROM Professor p
+JOIN Department d ON p.dno = d.dno
+WHERE d.dname = 'Computer Science';
+
+--B
+CREATE OR REPLACE PROCEDURE display_message()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RAISE NOTICE 'Welcome to RDBMS world!!!!';
+END;
+$$;
+
+CALL display_message();

@@ -1,0 +1,77 @@
+-- Create Book table
+CREATE TABLE Book (
+    bid SERIAL PRIMARY KEY,   -- Unique book identifier
+    btitle VARCHAR(255),      -- Book title
+    price DECIMAL(10, 2),     -- Price of the book
+    publication VARCHAR(255)  -- Publisher's name
+);
+
+-- Create Author table
+CREATE TABLE Author (
+    aid SERIAL PRIMARY KEY,   -- Unique author identifier
+    aname VARCHAR(255),       -- Author name
+    mobile_number VARCHAR(15), -- Mobile number of the author
+    city VARCHAR(255)         -- City of the author
+);
+
+-- Create the relationship between Author and Book
+-- Author can write multiple books, so we store the author_id in the Book table
+ALTER TABLE Book ADD COLUMN aid INT;
+
+-- Foreign key constraint to maintain referential integrity
+ALTER TABLE Book ADD CONSTRAINT fk_author FOREIGN KEY (aid) REFERENCES Author(aid) ON DELETE CASCADE;
+
+-- Insert records into Author table
+INSERT INTO Author (aname, mobile_number, city)
+VALUES
+('Steve Smith', '9876543210', 'New York'),
+('John Doe', '9876543222', 'Los Angeles'),
+('Alice Brown', '9876543233', 'Chicago'),
+('Sophie Adams', '9876543244', 'Houston'),
+('Shane Watson', '9876543255', 'San Francisco');
+
+-- Insert records into Book table
+INSERT INTO Book (btitle, price, publication, aid)
+VALUES
+('The Great Adventure', 599.99, 'Prentice Hall', 1),
+('Data Science 101', 499.99, 'OReilly', 2),
+('Deep Learning', 699.99, 'Prentice Hall', 3),
+('Machine Learning', 799.99, 'Prentice Hall', 4),
+('The Art of Programming', 849.99, 'OReilly', 5);
+
+--1
+SELECT aname
+FROM Author
+WHERE aname LIKE 'S%';
+
+--2
+SELECT SUM(price) AS total_price
+FROM Book
+WHERE publication = 'Prentice Hall';
+
+--3
+UPDATE Author
+SET mobile_number = '9844567822'
+WHERE aname = 'Shane Watson';
+
+--4
+SELECT b.bid, b.btitle, b.price, b.publication
+FROM Book b
+JOIN Author a ON b.aid = a.aid
+WHERE a.aname = 'John Doe';
+
+--B
+CREATE OR REPLACE FUNCTION max_price()
+RETURNS DECIMAL(10, 2) AS $$
+DECLARE
+    max_price DECIMAL(10, 2);
+BEGIN
+    -- Find the maximum price from the Book table
+    SELECT MAX(price) INTO max_price FROM Book;
+    
+    -- Return the maximum price
+    RETURN max_price;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT max_price();

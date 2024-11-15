@@ -1,0 +1,80 @@
+-- Create the Customer table
+CREATE TABLE Customer (
+    cust_no INT PRIMARY KEY,
+    cust_name VARCHAR(100),
+    cust_city VARCHAR(100)
+);
+
+-- Create the Account table
+CREATE TABLE Account (
+    acct_no INT PRIMARY KEY,
+    acct_type VARCHAR(10) CHECK (acct_type IN ('saving', 'current')),  -- Only saving or current accounts
+    balance DECIMAL(10, 2),
+    branch_name VARCHAR(100),
+    cust_no INT,  -- Foreign key referencing Customer
+    FOREIGN KEY (cust_no) REFERENCES Customer(cust_no) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Customer table
+INSERT INTO Customer (cust_no, cust_name, cust_city)
+VALUES
+(101, 'Alice Johnson', 'New York'),
+(102, 'Robert Smith', 'Los Angeles'),
+(103, 'Rachel Green', 'Chicago'),
+(104, 'Michael Brown', 'San Francisco'),
+(105, 'Rebecca Black', 'Los Angeles');
+
+-- Inserting sample data into Account table
+INSERT INTO Account (acct_no, acct_type, balance, branch_name, cust_no)
+VALUES
+(201, 'saving', 1000000.00, 'M.G.Road', 101),
+(202, 'current', 300000.00, 'Wall Street', 102),
+(203, 'saving', 500000.00, 'M.G.Road', 103),
+(204, 'saving', 2000000.00, 'M.G.Road', 104),
+(205, 'current', 150000.00, 'Main Branch', 105),
+(206, 'saving', 750000.00, 'M.G.Road', 103),
+(207, 'saving', 400000.00, 'M.G.Road', 101);
+
+--1
+SELECT *
+FROM Account
+WHERE acct_type = 'saving' AND balance > 500000;
+
+--2
+SELECT COUNT(*)
+FROM Customer
+WHERE cust_name LIKE 'R%';
+
+--3
+SELECT SUM(balance) AS total_balance
+FROM Account
+WHERE branch_name = 'M.G.Road';
+
+--4
+DELETE FROM Customer
+WHERE cust_name = 'Rebecca Black';
+
+--B
+CREATE OR REPLACE FUNCTION get_customers_by_city(p_city VARCHAR)
+RETURNS VOID AS $$
+DECLARE
+    customer_cursor CURSOR FOR
+    SELECT cust_name
+    FROM Customer
+    WHERE cust_city = p_city;
+    cust_name VARCHAR(100);
+BEGIN
+    OPEN customer_cursor;
+    
+    -- Loop through the cursor and print customer names
+    LOOP
+        FETCH customer_cursor INTO cust_name;
+        EXIT WHEN NOT FOUND;  -- Exit the loop when no more rows are found
+        RAISE NOTICE 'Customer Name: %', cust_name;  -- Print the customer name
+    END LOOP;
+    
+    CLOSE customer_cursor;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT get_customers_by_city('Los Angeles');

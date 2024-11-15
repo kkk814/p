@@ -1,0 +1,96 @@
+-- Create Customer table
+CREATE TABLE Customer (
+    cust_no SERIAL PRIMARY KEY,
+    cust_name VARCHAR(100),
+    city VARCHAR(100)
+);
+
+-- Create Loan table
+CREATE TABLE Loan (
+    loan_no SERIAL PRIMARY KEY,
+    loan_amt DECIMAL CHECK (loan_amt > 0)
+);
+
+-- Create the many-to-many relationship table (junction table)
+CREATE TABLE Customer_Loan (
+    cust_no INT,
+    loan_no INT,
+    PRIMARY KEY (cust_no, loan_no),
+    CONSTRAINT fk_customer FOREIGN KEY (cust_no) REFERENCES Customer(cust_no) ON DELETE CASCADE,
+    CONSTRAINT fk_loan FOREIGN KEY (loan_no) REFERENCES Loan(loan_no) ON DELETE CASCADE
+);
+
+-- Insert records into Customer table
+INSERT INTO Customer (cust_name, city)
+VALUES
+('Alice', 'Pune'),
+('Bob', 'Mumbai'),
+('Charlie', 'Delhi'),
+('David', 'Pune'),
+('Eva', 'Chennai');
+
+-- Insert records into Loan table
+INSERT INTO Loan (loan_amt)
+VALUES
+(250000),    -- 2.5 lakh
+(150000),    -- 1.5 lakh
+(300000),    -- 3 lakh
+(500000),    -- 5 lakh
+(100000);    -- 1 lakh
+
+-- Insert records into Customer_Loan table (many-to-many relation)
+INSERT INTO Customer_Loan (cust_no, loan_no)
+VALUES
+(1, 1),   -- Alice has loan 1
+(2, 2),   -- Bob has loan 2
+(3, 3),   -- Charlie has loan 3
+(4, 4),   -- David has loan 4
+(5, 5),   -- Eva has loan 5
+(1, 2),   -- Alice also has loan 2
+(2, 3);   -- Bob also has loan 3
+
+--1
+SELECT cust_name
+FROM Customer
+WHERE cust_name LIKE 'A%';
+
+--2
+SELECT city, array_agg(cust_name) AS customer_names
+FROM Customer
+GROUP BY city
+ORDER BY city;
+
+--3
+SELECT loan_no
+FROM Loan
+WHERE loan_amt > 200000;
+
+--4
+UPDATE Customer
+SET city = 'Mumbai'
+WHERE cust_name = 'David' AND city = 'Pune';
+
+--B
+CREATE OR REPLACE FUNCTION get_customers_sorted_by_city()
+RETURNS TABLE(cust_no INT, cust_name VARCHAR, city VARCHAR) AS $$
+DECLARE
+    customer_cursor CURSOR FOR 
+        SELECT cust_no, cust_name, city
+        FROM Customer
+        ORDER BY city;
+BEGIN
+    OPEN customer_cursor;
+    
+    -- Fetch the records from the cursor
+    LOOP
+        FETCH customer_cursor INTO cust_no, cust_name, city;
+        EXIT WHEN NOT FOUND;
+        RETURN NEXT;
+    END LOOP;
+    
+    CLOSE customer_cursor;
+    RETURN;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_customers_sorted_by_city();

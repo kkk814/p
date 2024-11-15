@@ -1,0 +1,92 @@
+-- Create the Bus table
+CREATE TABLE Bus (
+    bus_no SERIAL PRIMARY KEY,
+    capacity INT NOT NULL,
+    depot_name VARCHAR(100)
+);
+
+-- Create the Driver table
+CREATE TABLE Driver (
+    driver_no SERIAL PRIMARY KEY,
+    driver_name VARCHAR(100),
+    license_no VARCHAR(20) UNIQUE,
+    address VARCHAR(200),
+    age INT
+);
+
+-- Create the Junction table to represent the many-to-many relationship
+CREATE TABLE Bus_Driver (
+    bus_no INT,
+    driver_no INT,
+    date_of_duty DATE,
+    PRIMARY KEY (bus_no, driver_no),
+    CONSTRAINT fk_bus FOREIGN KEY (bus_no) REFERENCES Bus(bus_no) ON DELETE CASCADE,
+    CONSTRAINT fk_driver FOREIGN KEY (driver_no) REFERENCES Driver(driver_no) ON DELETE CASCADE
+);
+
+-- Inserting data into the Bus table
+INSERT INTO Bus (capacity, depot_name)
+VALUES
+(40, 'Downtown Depot'),
+(25, 'East Depot'),
+(50, 'West Depot'),
+(20, 'North Depot'),
+(30, 'South Depot');
+
+-- Inserting data into the Driver table
+INSERT INTO Driver (driver_name, license_no, address, age)
+VALUES
+('John Doe', 'L12345', '123 Main St, City', 35),
+('Alice Smith', 'L67890', '456 Oak St, City', 45),
+('Bob Johnson', 'L11223', '789 Pine St, City', 50),
+('Sara Lee', 'L22334', '321 Elm St, City', 40),
+('Sam Green', 'L55678', '654 Maple St, City', 30);
+
+-- Inserting data into the Bus_Driver table (many-to-many relationship with Date_of_duty)
+INSERT INTO Bus_Driver (bus_no, driver_no, date_of_duty)
+VALUES
+(1, 1, '2024-01-01'),
+(2, 2, '2024-01-02'),
+(3, 3, '2024-01-03'),
+(4, 4, '2024-01-04'),
+(5, 5, '2024-01-05'),
+(1, 2, '2024-01-06'),
+(2, 3, '2024-01-07');
+
+--1
+SELECT COUNT(*) AS num_buses
+FROM Bus
+WHERE capacity > 20;
+
+--2
+SELECT COUNT(*) AS num_drivers
+FROM Driver
+WHERE age > 40;
+
+--3
+SELECT driver_name
+FROM Driver
+WHERE driver_name LIKE 'S%';
+
+--4
+SELECT * 
+FROM Bus
+WHERE depot_name = 'Downtown Depot';
+
+--B
+CREATE OR REPLACE PROCEDURE find_max_of_two(
+    num1 INT, 
+    num2 INT, 
+    OUT max_num INT
+)
+AS $$
+BEGIN
+    IF num1 > num2 THEN
+        max_num := num1;
+    ELSE
+        max_num := num2;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CALL find_max_of_two(20, 50);

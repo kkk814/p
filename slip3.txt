@@ -1,0 +1,82 @@
+-- Create the Department table
+CREATE TABLE Department (
+    dno INT PRIMARY KEY,
+    dname VARCHAR(100),
+    location VARCHAR(100) NOT NULL  -- Location should not be NULL
+);
+
+-- Create the Employee table
+CREATE TABLE Employee (
+    eno INT PRIMARY KEY,
+    ename VARCHAR(100),
+    designation VARCHAR(100),
+    salary DECIMAL(10, 2),
+    dno INT,  -- Foreign key referencing Department
+    FOREIGN KEY (dno) REFERENCES Department(dno) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Department table
+INSERT INTO Department (dno, dname, location)
+VALUES
+(1, 'HR', 'New York'),
+(2, 'Finance', 'Los Angeles'),
+(3, 'Engineering', 'San Francisco'),
+(4, 'Sales', 'Chicago');
+
+-- Inserting sample data into Employee table
+INSERT INTO Employee (eno, ename, designation, salary, dno)
+VALUES
+(101, 'John R', 'Manager', 85000.00, 1),
+(102, 'Alice', 'HR Executive', 45000.00, 1),
+(103, 'Bob R', 'Accountant', 60000.00, 2),
+(104, 'Charlie', 'Engineer', 95000.00, 3),
+(105, 'Diana R', 'Sales Manager', 78000.00, 4),
+(106, 'Eve', 'Engineer', 92000.00, 3);
+
+--1
+UPDATE Employee
+SET salary = salary * 1.05;
+
+--2
+SELECT AVG(salary) AS avg_salary
+FROM Employee;
+
+--3
+SELECT *
+FROM Department
+WHERE location = 'San Francisco';
+
+--4
+SELECT *
+FROM Employee
+WHERE ename LIKE '%r';
+
+--B
+CREATE OR REPLACE FUNCTION get_high_salary_employees()
+RETURNS TABLE(eno INT, ename VARCHAR, designation VARCHAR, salary DECIMAL, dno INT) AS $$
+DECLARE
+    emp_cursor CURSOR FOR
+        SELECT eno, ename, designation, salary, dno
+        FROM Employee
+        WHERE salary > 80000;
+BEGIN
+    -- Open the cursor
+    OPEN emp_cursor;
+
+    -- Loop through the cursor and fetch each record
+    LOOP
+        FETCH emp_cursor INTO eno, ename, designation, salary, dno;
+        EXIT WHEN NOT FOUND;  -- Exit the loop when there are no more rows
+        
+        -- Return the current row
+        RETURN NEXT;
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE emp_cursor;
+
+    RETURN;  -- End the function
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_high_salary_employees();

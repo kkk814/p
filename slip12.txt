@@ -1,0 +1,75 @@
+-- Create the Game table
+CREATE TABLE Game (
+    gcode SERIAL PRIMARY KEY,
+    gname VARCHAR(100),
+    noofplayers INT,
+    coachname VARCHAR(100),
+    captain_name VARCHAR(100)
+);
+
+-- Create the Player table
+CREATE TABLE Player (
+    pno SERIAL PRIMARY KEY,
+    pname VARCHAR(100),
+    gcode INT,  -- Foreign key referencing the Game table
+    FOREIGN KEY (gcode) REFERENCES Game(gcode) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Game table
+INSERT INTO Game (gname, noofplayers, coachname, captain_name)
+VALUES
+('Football', 11, 'John Doe', 'Player 1'),
+('Basketball', 5, 'Jane Smith', 'Player 2'),
+('Kho Kho', 7, 'Kumar Patel', 'Player 3'),
+('Hockey', 11, 'Michael Johnson', 'Player 4'),
+('Cricket', 11, 'Anil Sharma', 'Player 5');
+
+-- Inserting sample data into Player table
+INSERT INTO Player (pname, gcode)
+VALUES
+('Player 1', 1),
+('Player 2', 1),
+('Player 3', 2),
+('Player 4', 3),
+('Player 5', 3),
+('Player 6', 4),
+('Player 7', 5),
+('Player 8', 5),
+('Player 9', 1),
+('Player 10', 2),
+('Player 11', 3);
+
+--1
+SELECT gname
+FROM Game
+WHERE gname LIKE '%ball';
+
+--2
+SELECT AVG(noofplayers) AS avg_players
+FROM Game;
+
+--3
+SELECT *
+FROM Game
+WHERE gname = 'Kho Kho';
+
+--4
+UPDATE Game
+SET coachname = 'David Wilson'
+WHERE gname = 'Hockey';
+
+--B
+CREATE OR REPLACE PROCEDURE deleterecords(p_coachname VARCHAR)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Delete the game record where coach name matches the input
+    DELETE FROM Game
+    WHERE coachname = p_coachname;
+    
+    -- Optionally, you can add a notice to confirm the deletion
+    RAISE NOTICE 'Game with coach % has been deleted.', p_coachname;
+END;
+$$;
+
+CALL deleterecords('John Doe');

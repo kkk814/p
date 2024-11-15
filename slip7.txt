@@ -1,0 +1,71 @@
+-- Create the Policy table
+CREATE TABLE Policy (
+    pno INT PRIMARY KEY,
+    pname VARCHAR(100),
+    premium_amt DECIMAL(10, 2),
+    policy_type VARCHAR(20) CHECK (policy_type IN ('Yearly', 'Half-yearly', 'Monthly'))
+);
+
+-- Create the Customer table
+CREATE TABLE Customer (
+    cno INT PRIMARY KEY,
+    cname VARCHAR(100),
+    city VARCHAR(100),
+    agent_name VARCHAR(100),
+    pno INT,  -- Foreign key referencing Policy
+    FOREIGN KEY (pno) REFERENCES Policy(pno) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Policy table
+INSERT INTO Policy (pno, pname, premium_amt, policy_type)
+VALUES
+(1, 'Life Insurance', 10000.00, 'Yearly'),
+(2, 'Health Insurance', 5000.00, 'Half-yearly'),
+(3, 'Vehicle Insurance', 2000.00, 'Monthly'),
+(4, 'Home Insurance', 1500.00, 'Yearly'),
+(5, 'Travel Insurance', 3000.00, 'Monthly');
+
+-- Inserting sample data into Customer table
+INSERT INTO Customer (cno, cname, city, agent_name, pno)
+VALUES
+(101, 'John Doe', 'New York', 'Agent A', 1),
+(102, 'Jane Smith', 'Los Angeles', 'Agent B', 2),
+(103, 'Robert Brown', 'Chicago', 'Agent C', 3),
+(104, 'Emily White', 'Houston', 'Agent D', 4),
+(105, 'Michael Green', 'Los Angeles', 'Agent B', 5);
+
+--1
+SELECT * 
+FROM Customer
+WHERE city = 'Los Angeles';
+
+--2
+SELECT AVG(premium_amt) AS average_premium
+FROM Policy;
+
+--3
+UPDATE Policy
+SET premium_amt = premium_amt * 1.10
+WHERE policy_type = 'Monthly';
+
+--4
+SELECT policy_type, COUNT(*) AS policy_count
+FROM Policy
+GROUP BY policy_type;
+
+--B
+CREATE OR REPLACE FUNCTION max_premium()
+RETURNS DECIMAL(10, 2) AS $$
+DECLARE
+    max_premium_amt DECIMAL(10, 2);
+BEGIN
+    -- Find the maximum premium amount
+    SELECT MAX(premium_amt) INTO max_premium_amt
+    FROM Policy;
+    
+    -- Return the maximum premium amount
+    RETURN max_premium_amt;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT max_premium();

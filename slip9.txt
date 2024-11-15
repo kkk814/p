@@ -1,0 +1,89 @@
+-- Create the Student table
+CREATE TABLE Student (
+    sno INT PRIMARY KEY,
+    s_name VARCHAR(100),
+    s_class VARCHAR(10) CHECK (s_class IN ('FY', 'SY', 'TY'))  -- Class can only be 'FY', 'SY', or 'TY'
+);
+
+-- Create the Teacher table
+CREATE TABLE Teacher (
+    tno INT PRIMARY KEY,
+    t_name VARCHAR(100),
+    yrs_experience INT  -- Years of experience
+);
+
+-- Create the junction table to represent the many-to-many relationship between Student and Teacher
+CREATE TABLE Student_Teacher (
+    sno INT,  -- Foreign key referencing Student
+    tno INT,  -- Foreign key referencing Teacher
+    subject VARCHAR(100),  -- Descriptive attribute for the subject
+    PRIMARY KEY (sno, tno),  -- Composite primary key
+    FOREIGN KEY (sno) REFERENCES Student(sno) ON DELETE CASCADE,
+    FOREIGN KEY (tno) REFERENCES Teacher(tno) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Student table
+INSERT INTO Student (sno, s_name, s_class)
+VALUES
+(101, 'John Doe', 'FY'),
+(102, 'Jane Smith', 'SY'),
+(103, 'Robert Brown', 'TY'),
+(104, 'Emily White', 'FY'),
+(105, 'Michael Green', 'TY');
+
+-- Inserting sample data into Teacher table
+INSERT INTO Teacher (tno, t_name, yrs_experience)
+VALUES
+(201, 'Prof. Smith', 5),
+(202, 'Prof. Johnson', 10),
+(203, 'Prof. Brown', 7),
+(204, 'Prof. Davis', 12);
+
+-- Inserting sample data into Student_Teacher table (many-to-many relationship)
+INSERT INTO Student_Teacher (sno, tno, subject)
+VALUES
+(101, 201, 'Mathematics'),
+(102, 202, 'Physics'),
+(103, 203, 'Chemistry'),
+(104, 204, 'Biology'),
+(105, 202, 'Physics'),
+(101, 203, 'Chemistry'),
+(103, 202, 'Physics');
+
+--1
+SELECT s_class, COUNT(*) AS number_of_students
+FROM Student
+GROUP BY s_class;
+
+--2
+SELECT s_name
+FROM Student
+WHERE s_class = 'TY';
+
+--3
+SELECT COUNT(DISTINCT s.sno) AS num_students
+FROM Student s
+JOIN Student_Teacher st ON s.sno = st.sno
+WHERE st.subject = 'Physics';
+
+--4
+DELETE FROM Student
+WHERE sno = 101;
+
+--B
+CREATE OR REPLACE FUNCTION get_teacher_experience(teacher_name VARCHAR)
+RETURNS INT AS $$
+DECLARE
+    teacher_experience INT;
+BEGIN
+    -- Retrieve the years of experience for the given teacher name
+    SELECT yrs_experience INTO teacher_experience
+    FROM Teacher
+    WHERE t_name = teacher_name;
+    
+    -- Return the result
+    RETURN teacher_experience;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT get_teacher_experience('Prof. Smith');

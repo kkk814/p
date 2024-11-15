@@ -1,0 +1,86 @@
+-- Create Student table
+CREATE TABLE Student (
+    rno SERIAL PRIMARY KEY,  -- Unique roll number
+    name VARCHAR(100),
+    city VARCHAR(100)
+);
+
+-- Create Subject table
+CREATE TABLE Subject (
+    subno SERIAL PRIMARY KEY,  -- Unique subject number
+    subname VARCHAR(100),
+    teachername VARCHAR(100)
+);
+
+-- Create the many-to-many relationship table with a descriptive attribute 'mark'
+CREATE TABLE Student_Subject (
+    rno INT,
+    subno INT,
+    mark INT,  -- Descriptive attribute (marks)
+    PRIMARY KEY (rno, subno),
+    CONSTRAINT fk_student FOREIGN KEY (rno) REFERENCES Student(rno) ON DELETE CASCADE,
+    CONSTRAINT fk_subject FOREIGN KEY (subno) REFERENCES Subject(subno) ON DELETE CASCADE
+);
+
+-- Insert records into Student table
+INSERT INTO Student (name, city)
+VALUES
+('John', 'Mumbai'),
+('Alice', 'Delhi'),
+('Bob', 'Chennai'),
+('David', 'Pune'),
+('Eva', 'Mumbai');
+
+-- Insert records into Subject table
+INSERT INTO Subject (subname, teachername)
+VALUES
+('Math', 'Dr. Smith'),
+('OS', 'Prof. Miller'),
+('Physics', 'Dr. Davis'),
+('Chemistry', 'Dr. White');
+
+-- Insert records into Student_Subject table (marks as descriptive attribute)
+INSERT INTO Student_Subject (rno, subno, mark)
+VALUES
+(1, 1, 85),  -- John got 85 in Math
+(1, 2, 90),  -- John got 90 in OS
+(2, 1, 75),  -- Alice got 75 in Math
+(2, 3, 80),  -- Alice got 80 in Physics
+(3, 2, 65),  -- Bob got 65 in OS
+(4, 1, 95),  -- David got 95 in Math
+(4, 4, 88),  -- David got 88 in Chemistry
+(5, 3, 92);  -- Eva got 92 in Physics
+
+--1
+SELECT name
+FROM Student
+WHERE city = 'Mumbai';
+
+--2
+SELECT COUNT(*) AS subject_count
+FROM Subject
+WHERE teachername = 'Dr. Smith';
+
+--3
+SELECT teachername
+FROM Subject
+WHERE subname = 'OS';
+
+--4
+DELETE FROM Student
+WHERE name = 'John';
+
+--B
+CREATE OR REPLACE PROCEDURE addrecords(
+    p_name VARCHAR,
+    p_city VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO Student (name, city)
+    VALUES (p_name, p_city);
+END;
+$$;
+
+CALL addrecords('Frank', 'Bangalore');

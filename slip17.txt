@@ -1,0 +1,74 @@
+-- Create the Property table
+CREATE TABLE Property (
+    pno SERIAL PRIMARY KEY,
+    description TEXT,
+    area DECIMAL(10, 2),
+    rate DECIMAL(10, 2) CHECK (rate > 0) -- Ensuring rate is greater than 0
+);
+
+-- Create the Owner table
+CREATE TABLE Owner (
+    owner_name VARCHAR(100),
+    city VARCHAR(100),
+    phno VARCHAR(15),
+    PRIMARY KEY (owner_name)
+);
+
+-- Add foreign key relationship between Owner and Property
+ALTER TABLE Property
+ADD COLUMN owner_name VARCHAR(100),
+ADD CONSTRAINT fk_owner FOREIGN KEY (owner_name) REFERENCES Owner(owner_name) ON DELETE CASCADE;
+
+-- Inserting sample data into the Owner table
+INSERT INTO Owner (owner_name, city, phno)
+VALUES
+('Dr. Vikas', 'Mumbai', '9876543210'),
+('Suresh Gupta', 'Pune', '9192837465'),
+('Neha Desai', 'Mumbai', '9384756152'),
+('Anita Shah', 'Delhi', '9988776655'),
+('Ramesh Yadav', 'Bangalore', '8856916175');
+
+-- Inserting sample data into the Property table
+INSERT INTO Property (description, area, rate, owner_name)
+VALUES
+('2BHK Apartment in city center', 1200, 7500, 'Dr. Vikas'),
+('3BHK Flat near park', 1500, 9000, 'Suresh Gupta'),
+('1BHK in the heart of Mumbai', 800, 5500, 'Neha Desai'),
+('Penthouse with sea view', 3000, 15000, 'Anita Shah'),
+('Studio apartment in tech park', 600, 4000, 'Ramesh Yadav');
+
+--1
+SELECT owner_name
+FROM Owner
+WHERE owner_name LIKE '%a';
+
+--2
+SELECT AVG(rate) AS average_rate
+FROM Property;
+
+--3
+UPDATE Owner
+SET phno = '8856916175'
+WHERE owner_name = 'Dr. Vikas';
+
+--4
+SELECT area, description, rate, owner_name
+FROM Property
+ORDER BY area;
+
+--B
+CREATE OR REPLACE FUNCTION min_price()
+RETURNS DECIMAL(10, 2) AS $$
+DECLARE
+    min_rate DECIMAL(10, 2);
+BEGIN
+    -- Find the minimum rate of all properties
+    SELECT MIN(rate) INTO min_rate
+    FROM Property;
+    
+    -- Return the minimum rate
+    RETURN min_rate;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT min_price();

@@ -1,0 +1,86 @@
+-- Create the Student table
+CREATE TABLE Student (
+    rno INT PRIMARY KEY,
+    name VARCHAR(100),
+    city VARCHAR(100)
+);
+
+-- Create the Teacher table
+CREATE TABLE Teacher (
+    tno INT PRIMARY KEY,
+    tname VARCHAR(100),
+    phone_no VARCHAR(20),
+    salary DECIMAL(10, 2)
+);
+
+-- Create the junction table to represent the many-to-many relationship between Student and Teacher
+CREATE TABLE Student_Teacher (
+    rno INT,  -- Foreign key referencing Student
+    tno INT,  -- Foreign key referencing Teacher
+    subject VARCHAR(100),  -- Descriptive attribute for the subject
+    PRIMARY KEY (rno, tno),
+    FOREIGN KEY (rno) REFERENCES Student(rno) ON DELETE CASCADE,
+    FOREIGN KEY (tno) REFERENCES Teacher(tno) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Student table
+INSERT INTO Student (rno, name, city)
+VALUES
+(1, 'Shankar Patel', 'Mumbai'),
+(2, 'Shivani Gupta', 'Delhi'),
+(3, 'Shruti Kumar', 'Bangalore'),
+(4, 'Sandeep Joshi', 'Chennai'),
+(5, 'Sahil Mehta', 'Pune');
+
+-- Inserting sample data into Teacher table
+INSERT INTO Teacher (tno, tname, phone_no, salary)
+VALUES
+(101, 'Prof. Satkar', '9876543210', 75000),
+(102, 'Prof. Sharma', '9988776655', 65000),
+(103, 'Prof. Gupta', '9123456789', 80000),
+(104, 'Prof. Kumar', '9156234876', 95000),
+(105, 'Prof. Yadav', '9192837465', 60000);
+
+-- Inserting sample data into Student_Teacher table (many-to-many relationship with subject)
+INSERT INTO Student_Teacher (rno, tno, subject)
+VALUES
+(1, 101, 'Mathematics'),
+(2, 102, 'Physics'),
+(3, 103, 'Chemistry'),
+(4, 104, 'Biology'),
+(5, 105, 'History'),
+(1, 103, 'Chemistry'),
+(2, 104, 'Biology'),
+(3, 105, 'History');
+
+--1
+SELECT name
+FROM Student
+WHERE name LIKE 'Sh%';
+
+--2
+SELECT COUNT(*) AS student_count
+FROM Student
+WHERE city = 'Mumbai';
+
+--3
+SELECT MAX(salary) AS max_salary
+FROM Teacher;
+
+--4
+UPDATE Teacher
+SET phone_no = '9822131226'
+WHERE tname = 'Prof. Satkar';
+
+
+--B
+CREATE OR REPLACE PROCEDURE updaterecords()
+AS $$
+BEGIN
+    -- Update the salary of all teachers by 5%
+    UPDATE Teacher
+    SET salary = salary * 1.05;
+END;
+$$ LANGUAGE plpgsql;
+
+CALL updaterecords();

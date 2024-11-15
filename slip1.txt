@@ -1,0 +1,70 @@
+-- Create the Room table
+CREATE TABLE Room (
+    room_no INT PRIMARY KEY,
+    room_name VARCHAR(100),
+    room_type VARCHAR(10) CHECK (room_type IN ('AC', 'NonAC')),
+    charges DECIMAL(10, 2)
+);
+
+-- Create the Guest table
+CREATE TABLE Guest (
+    guest_code INT PRIMARY KEY,
+    gname VARCHAR(100),
+    city VARCHAR(100),
+    no_of_persons INT,
+    room_no INT,  -- Foreign key referencing Room
+    FOREIGN KEY (room_no) REFERENCES Room (room_no) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Room table
+INSERT INTO Room (room_no, room_name, room_type, charges)
+VALUES
+(101, 'Deluxe Room', 'AC', 200.00),
+(102, 'Standard Room', 'NonAC', 150.00),
+(103, 'Luxury Suite', 'AC', 300.00),
+(104, 'Basic Room', 'NonAC', 120.00);
+
+-- Inserting sample data into Guest table
+INSERT INTO Guest (guest_code, gname, city, no_of_persons, room_no)
+VALUES
+(1, 'Sammy Davis', 'New York', 2, 101),
+(2, 'Sally Johnson', 'Los Angeles', 1, 102),
+(3, 'John Smith', 'Chicago', 3, 103),
+(4, 'Sara Lee', 'Houston', 2, 104);
+
+-- 1
+SELECT gname
+FROM Guest
+WHERE gname LIKE 'S%';
+
+-- 2
+UPDATE Room
+SET charges = charges * 1.15
+WHERE room_type = 'AC';
+
+--3
+SELECT MIN(charges) AS min_charges
+FROM Room;
+
+--4
+SELECT gname
+FROM Guest
+ORDER BY city;
+
+--B
+CREATE OR REPLACE PROCEDURE sum_and_product(
+    num1 INT,
+    num2 INT,
+    OUT sum_result INT,
+    OUT product_result INT
+)
+AS $$
+BEGIN
+    sum_result := num1 + num2;
+    product_result := num1 * num2;
+END;
+$$ LANGUAGE plpgsql;
+
+CALL sum_and_product(4, 5, sum_result, product_result);
+
+

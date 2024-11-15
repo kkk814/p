@@ -1,0 +1,80 @@
+-- Create the Item table
+CREATE TABLE Item (
+    item_no SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    quantity INT,
+    rate DECIMAL(10, 2)
+);
+
+-- Create the Supplier table
+CREATE TABLE Supplier (
+    s_no SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    city VARCHAR(100),
+    contact VARCHAR(15)
+);
+
+-- Create the associative table to represent the many-to-many relationship
+CREATE TABLE Item_Supplier (
+    item_no INT,
+    s_no INT,
+    PRIMARY KEY (item_no, s_no),
+    FOREIGN KEY (item_no) REFERENCES Item(item_no) ON DELETE CASCADE,
+    FOREIGN KEY (s_no) REFERENCES Supplier(s_no) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Item table
+INSERT INTO Item (name, quantity, rate)
+VALUES
+('Mouse', 50, 20.00),
+('Keyboard', 30, 45.00),
+('Monitor', 20, 200.00),
+('Printer', 10, 150.00),
+('Headset', 60, 25.00);
+
+-- Inserting sample data into Supplier table
+INSERT INTO Supplier (name, city, contact)
+VALUES
+('Peter Enterprises', 'New York', '1234567890'),
+('Paul Supplies', 'Los Angeles', '2345678901'),
+('Priya Electronics', 'Chicago', '3456789012'),
+('Global Tech', 'San Francisco', '4567890123'),
+('ProTech Systems', 'New York', '5678901234');
+
+-- Inserting sample data into Item_Supplier table (junction table)
+INSERT INTO Item_Supplier (item_no, s_no)
+VALUES
+(1, 1), (1, 2), (2, 3), (3, 4), (4, 5),
+(2, 2), (5, 3), (3, 1), (4, 4), (5, 1);
+
+--1
+SELECT *
+FROM Supplier
+WHERE name LIKE 'P%';
+
+--2
+DELETE FROM Item
+WHERE item_no = 3;
+
+--3
+SELECT COUNT(*) AS item_count
+FROM Item
+WHERE rate > 50;
+
+--4
+SELECT name
+FROM Supplier
+WHERE city = 'New York';
+
+--B
+CREATE OR REPLACE FUNCTION get_items_with_quantity_greater_than_30()
+RETURNS TABLE(item_no INT, name VARCHAR, quantity INT, rate DECIMAL) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT item_no, name, quantity, rate
+    FROM Item
+    WHERE quantity > 30;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_items_with_quantity_greater_than_30();

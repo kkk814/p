@@ -1,0 +1,70 @@
+-- Create the Car table
+CREATE TABLE Car (
+    car_code SERIAL PRIMARY KEY,
+    c_name VARCHAR(100),
+    c_price DECIMAL(10, 2),
+    color_type VARCHAR(50) CHECK (color_type IN ('metallic', 'solid'))
+);
+
+-- Create the Customer table
+CREATE TABLE Customer (
+    cust_code SERIAL PRIMARY KEY,
+    cust_name VARCHAR(100),
+    cust_address VARCHAR(255)
+);
+
+-- Add foreign key in the Car table to represent the one-to-many relationship
+ALTER TABLE Car
+ADD COLUMN cust_code INT,
+ADD CONSTRAINT fk_customer FOREIGN KEY (cust_code) REFERENCES Customer(cust_code) ON DELETE CASCADE;
+
+-- Inserting sample data into the Customer table
+INSERT INTO Customer (cust_name, cust_address)
+VALUES
+('John Doe', 'ShivajiNagar'),
+('Alice Smith', 'Pune'),
+('Bob Brown', 'ShivajiNagar'),
+('Charlie Green', 'Mumbai'),
+('David Williams', 'ShivajiNagar');
+
+-- Inserting sample data into the Car table
+INSERT INTO Car (c_name, c_price, color_type, cust_code)
+VALUES
+('Ferrari', 300000, 'metallic', 1),   -- John's Ferrari (metallic)
+('BMW', 50000, 'solid', 2),           -- Alice's BMW (solid)
+('Honda Civic', 150000, 'metallic', 3), -- Bob's Honda Civic (metallic)
+('Ferrari', 450000, 'metallic', 4),   -- Charlie's Ferrari (metallic)
+('Mercedes', 250000, 'solid', 5);     -- David's Mercedes (solid)
+
+--1
+SELECT cust_name
+FROM Customer
+WHERE cust_name LIKE 'B%';
+
+--2
+SELECT COUNT(*) AS metallic_car_count
+FROM Car
+WHERE color_type = 'metallic';
+
+--3
+SELECT cust_name, cust_address
+FROM Customer
+WHERE cust_address = 'ShivajiNagar';
+
+--4
+UPDATE Car
+SET c_price = c_price * 1.15
+WHERE c_name = 'Ferrari';
+
+--B
+CREATE OR REPLACE FUNCTION get_metallic_cars_in_price_range()
+RETURNS TABLE (car_code INT, c_name VARCHAR, c_price DECIMAL, color_type VARCHAR) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT car_code, c_name, c_price, color_type
+    FROM Car
+    WHERE color_type = 'metallic' AND c_price BETWEEN 100000 AND 500000;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_metallic_cars_in_price_range();

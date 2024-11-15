@@ -1,0 +1,74 @@
+-- Create the Area table
+CREATE TABLE Area (
+    area_code INT PRIMARY KEY,
+    aname VARCHAR(100),
+    area_type VARCHAR(10) CHECK (area_type IN ('urban', 'rural')),
+    pincode INT
+);
+
+-- Create the Person table
+CREATE TABLE Person (
+    pnumber INT PRIMARY KEY,
+    pname VARCHAR(100),
+    birthdate DATE,
+    income DECIMAL(10, 2),
+    area_code INT,  -- Foreign key referencing Area
+    FOREIGN KEY (area_code) REFERENCES Area(area_code) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Area table
+INSERT INTO Area (area_code, aname, area_type, pincode)
+VALUES
+(1, 'Kalyaninagar', 'urban', 411014),
+(2, 'Mundhwa', 'urban', 411036),
+(3, 'Hadapsar', 'urban', 411028),
+(4, 'Vishrantwadi', 'rural', 411039),
+(5, 'Magarpatta', 'urban', 411013);
+
+-- Inserting sample data into Person table
+INSERT INTO Person (pnumber, pname, birthdate, income, area_code)
+VALUES
+(101, 'Ravi Shankar', '1985-06-15', 50000.00, 1),
+(102, 'Rina Patel', '1990-03-22', 60000.00, 2),
+(103, 'Ramesh Kumar', '1982-09-10', 70000.00, 3),
+(104, 'Rajesh Mehta', '1975-01-12', 55000.00, 4),
+(105, 'Rekha Agarwal', '1995-12-02', 45000.00, 5),
+(106, 'Arvind Joshi', '1980-08-30', 75000.00, 1),
+(107, 'Ravi Patil', '1988-11-19', 80000.00, 2);
+
+--1
+SELECT * 
+FROM Person
+WHERE pname LIKE 'R%';
+
+--2
+SELECT * 
+FROM Person
+ORDER BY income DESC;
+
+--3
+SELECT COUNT(*) AS urban_area_count
+FROM Area
+WHERE area_type = 'urban';
+
+--4
+UPDATE Area
+SET pincode = 411036
+WHERE aname = 'Kalyaninagar';
+
+--B
+CREATE OR REPLACE PROCEDURE addrecords(
+    p_pnumber INT,
+    p_pname VARCHAR,
+    p_birthdate DATE,
+    p_income DECIMAL,
+    p_area_code INT
+)
+AS $$
+BEGIN
+    INSERT INTO Person (pnumber, pname, birthdate, income, area_code)
+    VALUES (p_pnumber, p_pname, p_birthdate, p_income, p_area_code);
+END;
+$$ LANGUAGE plpgsql;
+
+CALL addrecords(108, 'Suresh Yadav', '1992-05-20', 50000, 3);

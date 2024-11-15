@@ -1,0 +1,87 @@
+-- Create the Item table
+CREATE TABLE Item (
+    item_no INT PRIMARY KEY,
+    name VARCHAR(100),
+    quantity INT
+);
+
+-- Create the Supplier table
+CREATE TABLE Supplier (
+    s_no INT PRIMARY KEY,
+    name VARCHAR(100),
+    city VARCHAR(100)
+);
+
+-- Create the junction table to represent the many-to-many relationship between Item and Supplier
+CREATE TABLE Item_Supplier (
+    item_no INT,  -- Foreign key referencing Item
+    s_no INT,     -- Foreign key referencing Supplier
+    PRIMARY KEY (item_no, s_no),
+    FOREIGN KEY (item_no) REFERENCES Item(item_no) ON DELETE CASCADE,
+    FOREIGN KEY (s_no) REFERENCES Supplier(s_no) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Item table
+INSERT INTO Item (item_no, name, quantity)
+VALUES
+(1, 'Mouse', 500),
+(2, 'Keyboard', 300),
+(3, 'Monitor', 150),
+(4, 'Printer', 100),
+(5, 'USB Cable', 1000);
+
+-- Inserting sample data into Supplier table
+INSERT INTO Supplier (s_no, name, city)
+VALUES
+(1, 'TechCorp', 'New York'),
+(2, 'MegaTech', 'Los Angeles'),
+(3, 'MicroSolutions', 'San Francisco'),
+(4, 'Global Supplies', 'Chicago'),
+(5, 'QuickTech', 'Mumbai');
+
+-- Inserting sample data into Item_Supplier table (many-to-many relationship)
+INSERT INTO Item_Supplier (item_no, s_no)
+VALUES
+(1, 1),  -- Mouse from TechCorp
+(1, 2),  -- Mouse from MegaTech
+(2, 3),  -- Keyboard from MicroSolutions
+(3, 4),  -- Monitor from Global Supplies
+(4, 5),  -- Printer from QuickTech
+(5, 1),  -- USB Cable from TechCorp
+(2, 5);  -- Keyboard from QuickTech
+
+--1
+UPDATE Item
+SET quantity = 800
+WHERE name = 'Mouse';
+
+--2
+SELECT *
+FROM Supplier
+WHERE name LIKE 'M%';
+
+--3
+SELECT COUNT(*) AS item_count
+FROM Item;
+
+--4
+SELECT name
+FROM Supplier
+WHERE city <> 'Mumbai';
+
+--B
+CREATE OR REPLACE FUNCTION min_quantity()
+RETURNS INT AS $$
+DECLARE
+    min_qty INT;
+BEGIN
+    -- Find the minimum quantity from the Item table
+    SELECT MIN(quantity) INTO min_qty
+    FROM Item;
+    
+    -- Return the minimum quantity
+    RETURN min_qty;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT min_quantity();

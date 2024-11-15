@@ -1,0 +1,83 @@
+-- Create the Department table
+CREATE TABLE Department (
+    dno SERIAL PRIMARY KEY,
+    dname VARCHAR(100),
+    HOD VARCHAR(100),
+    no_of_staff INT
+);
+
+-- Create the Project table
+CREATE TABLE Project (
+    pno SERIAL PRIMARY KEY,
+    pname VARCHAR(100),
+    start_date DATE,
+    budget DECIMAL(10, 2),
+    status CHAR(1) CHECK (status IN ('C', 'P', 'I')), -- C = Completed, P = In Progress, I = Incomplete
+    dno INT,
+    CONSTRAINT fk_department FOREIGN KEY (dno) REFERENCES Department(dno) ON DELETE SET NULL
+);
+
+-- Inserting sample data into the Department table
+INSERT INTO Department (dname, HOD, no_of_staff)
+VALUES
+('Computer Science', 'Dr. Sharma', 50),
+('Mechanical', 'Prof. Patel', 60),
+('Electrical', 'Dr. Gupta', 40),
+('Civil', 'Prof. Singh', 45);
+
+-- Inserting sample data into the Project table
+INSERT INTO Project (pname, start_date, budget, status, dno)
+VALUES
+('AI Research', '2019-06-12', 50000, 'P', 1),  -- Computer Science
+('Renewable Energy', '2020-01-20', 30000, 'C', 2),  -- Mechanical
+('Smart Grid', '2021-05-15', 25000, 'I', 3),  -- Electrical
+('Bridge Construction', '2018-09-10', 15000, 'C', 4),  -- Civil
+('Cloud Computing', '2019-06-12', 70000, 'P', 1);  -- Computer Science
+
+--1
+SELECT pname
+FROM Project
+WHERE start_date = '2019-06-12';
+
+--2
+SELECT SUM(budget) AS total_budget
+FROM Project;
+
+--3
+SELECT HOD
+FROM Department
+WHERE dname = 'Computer Science';
+
+--4
+SELECT pname
+FROM Project
+WHERE budget > 30000;
+
+--B
+CREATE OR REPLACE FUNCTION get_in_progress_projects()
+RETURNS TABLE (project_name VARCHAR) AS $$
+DECLARE
+    project_cursor CURSOR FOR
+    SELECT pname
+    FROM Project
+    WHERE status = 'P';
+    project_record Project%ROWTYPE;
+BEGIN
+    -- Open the cursor
+    OPEN project_cursor;
+
+    -- Loop through the cursor and return project names
+    LOOP
+        FETCH project_cursor INTO project_record;
+        EXIT WHEN NOT FOUND;
+        RETURN NEXT project_record.pname;
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE project_cursor;
+    
+    RETURN;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_in_progress_projects();

@@ -1,0 +1,81 @@
+-- Create the Route table
+CREATE TABLE Route (
+    Route_no INT PRIMARY KEY,
+    source VARCHAR(100),
+    destination VARCHAR(100),
+    no_of_stations INT
+);
+
+-- Create the Bus table
+CREATE TABLE Bus (
+    Bus_no INT PRIMARY KEY,
+    capacity INT NOT NULL,
+    depot_name VARCHAR(100),
+    Route_no INT,  -- Foreign key referencing Route
+    FOREIGN KEY (Route_no) REFERENCES Route(Route_no) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Route table
+INSERT INTO Route (Route_no, source, destination, no_of_stations)
+VALUES
+(1, 'New York', 'Chicago', 12),
+(2, 'Los Angeles', 'San Francisco', 8),
+(3, 'Houston', 'Dallas', 15),
+(4, 'Miami', 'Orlando', 5);
+
+-- Inserting sample data into Bus table
+INSERT INTO Bus (Bus_no, capacity, depot_name, Route_no)
+VALUES
+(101, 50, 'Downtown Depot', 1),
+(102, 45, 'North Depot', 2),
+(103, 60, 'Central Depot', 1),
+(104, 55, 'South Depot', 3),
+(105, 40, 'East Depot', 4);
+
+--1
+SELECT *
+FROM Bus
+WHERE depot_name = 'Downtown Depot';
+
+--2
+DELETE FROM Bus
+WHERE Bus_no = 102;
+
+--3
+SELECT *
+FROM Route
+WHERE no_of_stations > 10;
+
+--4
+SELECT *
+FROM Route
+WHERE source = 'Houston';
+
+--B
+CREATE OR REPLACE FUNCTION get_stations_for_route(p_route_no INT)
+RETURNS VOID AS $$
+DECLARE
+    route_cursor CURSOR FOR
+    SELECT no_of_stations
+    FROM Route
+    WHERE Route_no = p_route_no;
+    num_stations INT;
+BEGIN
+    OPEN route_cursor;
+    
+    -- Fetch the number of stations from the cursor
+    FETCH route_cursor INTO num_stations;
+    
+    -- Check if a route was found
+    IF NOT FOUND THEN
+        RAISE NOTICE 'Route not found for Route_no: %', p_route_no;
+    ELSE
+        -- Print the number of stations for the route
+        RAISE NOTICE 'Route % has % stations', p_route_no, num_stations;
+    END IF;
+    
+    CLOSE route_cursor;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT get_stations_for_route(1);

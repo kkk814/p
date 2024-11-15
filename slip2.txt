@@ -1,0 +1,70 @@
+-- Create the College table
+CREATE TABLE College (
+    cno INT PRIMARY KEY,
+    cname VARCHAR(100),
+    street_name VARCHAR(100),
+    ccity VARCHAR(100)
+);
+
+-- Create the Principal table
+CREATE TABLE Principal (
+    pno INT PRIMARY KEY,
+    pname VARCHAR(100),
+    experience INT CHECK (experience > 10),  -- Experience must be greater than 10 years
+    salary DECIMAL(10, 2),
+    cno INT,  -- Foreign key referencing College
+    FOREIGN KEY (cno) REFERENCES College (cno) ON DELETE CASCADE
+);
+
+-- Inserting sample data into the College table
+INSERT INTO College (cno, cname, street_name, ccity)
+VALUES
+(1, 'Springfield College', 'MG Road', 'Springfield'),
+(2, 'Greenwood University', 'Pine Street', 'Greenwood'),
+(3, 'Lakeview College', 'Maple Avenue', 'Lakeside'),
+(4, 'Riverside Academy', 'Main Street', 'Riverside');
+
+-- Inserting sample data into the Principal table
+INSERT INTO Principal (pno, pname, experience, salary, cno)
+VALUES
+(101, 'John Doe', 15, 75000.00, 1),
+(102, 'Jane Smith', 20, 85000.00, 2),
+(103, 'Michael Johnson', 12, 78000.00, 3),
+(104, 'Emily Davis', 25, 90000.00, 4);
+
+
+--1
+SELECT cname
+FROM College
+WHERE cname LIKE '%and%';
+
+--2
+SELECT AVG(salary) AS avg_salary
+FROM Principal;
+
+--3
+SELECT pname
+FROM Principal
+WHERE experience BETWEEN 10 AND 20;
+
+--4
+UPDATE College
+SET street_name = 'Nehru Road'
+WHERE street_name = 'MG Road';
+
+
+--B
+CREATE OR REPLACE PROCEDURE insert_college(
+    p_cno INT,
+    p_cname VARCHAR,
+    p_street_name VARCHAR,
+    p_ccity VARCHAR
+)
+AS $$
+BEGIN
+    INSERT INTO College (cno, cname, street_name, ccity)
+    VALUES (p_cno, p_cname, p_street_name, p_ccity);
+END;
+$$ LANGUAGE plpgsql;
+
+CALL insert_college(5, 'Mountainview College', 'Hill Road', 'Mountainview');

@@ -1,0 +1,73 @@
+-- Create the Employee table
+CREATE TABLE Employee (
+    emp_no SERIAL PRIMARY KEY,
+    emp_name VARCHAR(100),
+    city VARCHAR(100),
+    designation VARCHAR(50),
+    salary DECIMAL(10, 2)
+);
+
+-- Create the Project table
+CREATE TABLE Project (
+    project_no SERIAL PRIMARY KEY,
+    project_name VARCHAR(100),
+    status VARCHAR(20) CHECK (status IN ('Complete', 'In progress')),
+    start_date DATE,
+    emp_no INT,
+    CONSTRAINT fk_employee FOREIGN KEY (emp_no) REFERENCES Employee(emp_no) ON DELETE SET NULL
+);
+
+-- Inserting sample data into the Employee table
+INSERT INTO Employee (emp_name, city, designation, salary)
+VALUES
+('John Doe', 'New York', 'Manager', 75000),
+('Jane Smith', 'Chicago', 'Developer', 60000),
+('Alice Brown', 'San Francisco', 'Developer', 65000),
+('Bob Johnson', 'Los Angeles', 'Tester', 55000),
+('Charlie Williams', 'Boston', 'Developer', 70000);
+
+-- Inserting sample data into the Project table
+INSERT INTO Project (project_name, status, start_date, emp_no)
+VALUES
+('Project A', 'Complete', '2023-01-15', 1),  -- John Doe
+('Project B', 'In progress', '2023-02-01', 2),  -- Jane Smith
+('Project C', 'Complete', '2023-03-10', 3),  -- Alice Brown
+('Project D', 'In progress', '2023-04-20', 4),  -- Bob Johnson
+('Project E', 'Complete', '2023-05-10', 5);  -- Charlie Williams
+
+--1
+-- This is the constraint already applied:
+ALTER TABLE Project
+ADD CONSTRAINT status_check CHECK (status IN ('Complete', 'In progress'));
+
+--2
+SELECT COUNT(*) AS in_progress_projects
+FROM Project
+WHERE status = 'In progress';
+
+--3
+UPDATE Employee
+SET salary = salary * 1.05
+WHERE emp_no IN (SELECT emp_no FROM Project WHERE project_no = 10);
+
+--4
+SELECT project_name
+FROM Project
+WHERE status = 'Complete';
+
+--B
+CREATE OR REPLACE FUNCTION max_salary()
+RETURNS DECIMAL(10, 2) AS $$
+DECLARE
+    max_salary DECIMAL(10, 2);
+BEGIN
+    -- Find the maximum salary from the Employee table
+    SELECT MAX(salary) INTO max_salary
+    FROM Employee;
+    
+    -- Return the maximum salary
+    RETURN max_salary;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT max_salary();

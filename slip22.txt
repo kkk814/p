@@ -1,0 +1,85 @@
+-- Create Customer table
+CREATE TABLE Customer (
+    cust_no SERIAL PRIMARY KEY,
+    cust_name VARCHAR(100),
+    city VARCHAR(100)
+);
+
+-- Create Product table
+CREATE TABLE Product (
+    product_no SERIAL PRIMARY KEY,
+    pname VARCHAR(100),
+    price DECIMAL CHECK (price > 0)
+);
+
+-- Create the many-to-many relationship table (junction table)
+CREATE TABLE Customer_Product (
+    cust_no INT,
+    product_no INT,
+    PRIMARY KEY (cust_no, product_no),
+    CONSTRAINT fk_customer FOREIGN KEY (cust_no) REFERENCES Customer(cust_no) ON DELETE CASCADE,
+    CONSTRAINT fk_product FOREIGN KEY (product_no) REFERENCES Product(product_no) ON DELETE CASCADE
+);
+
+-- Insert records into Customer table
+INSERT INTO Customer (cust_name, city)
+VALUES
+('Alice', 'Pune'),
+('Bob', 'Mumbai'),
+('Charlie', 'Delhi'),
+('David', 'Pune'),
+('Eva', 'Chennai');
+
+-- Insert records into Product table
+INSERT INTO Product (pname, price)
+VALUES
+('Laptop', 45000),    -- 45k
+('Smartphone', 20000), -- 20k
+('Headphones', 1500),  -- 1.5k
+('Tablet', 3000),      -- 3k
+('Smartwatch', 5000);  -- 5k
+
+-- Insert records into Customer_Product table (many-to-many relation)
+INSERT INTO Customer_Product (cust_no, product_no)
+VALUES
+(1, 1),   -- Alice bought Laptop
+(2, 2),   -- Bob bought Smartphone
+(3, 3),   -- Charlie bought Headphones
+(4, 4),   -- David bought Tablet
+(5, 5),   -- Eva bought Smartwatch
+(1, 2),   -- Alice bought Smartphone
+(2, 3);   -- Bob bought Headphones
+
+--1
+SELECT cust_name
+FROM Customer
+WHERE cust_name LIKE '%A';
+
+--2
+SELECT COUNT(*) AS product_count
+FROM Product
+WHERE price > 1000;
+
+--3
+UPDATE Product
+SET price = price * 1.05;
+
+--4
+SELECT * 
+FROM Customer
+WHERE city = 'Pune';
+
+--B
+CREATE OR REPLACE PROCEDURE addrecords(
+    p_cust_name VARCHAR,
+    p_city VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO Customer (cust_name, city)
+    VALUES (p_cust_name, p_city);
+END;
+$$;
+
+CALL addrecords('Frank', 'Kolkata');

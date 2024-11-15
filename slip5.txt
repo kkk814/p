@@ -1,0 +1,104 @@
+-- Create the Doctor table
+CREATE TABLE Doctor (
+    dno INT PRIMARY KEY,
+    dname VARCHAR(100),
+    addr VARCHAR(255),
+    phone_no VARCHAR(20),
+    specialization VARCHAR(100)
+);
+
+-- Create the Patient table
+CREATE TABLE Patient (
+    pno INT PRIMARY KEY,
+    pat_name VARCHAR(100),
+    city VARCHAR(100),
+    disease VARCHAR(100)
+);
+
+-- Create the junction table Doctor_Patient to represent the many-to-many relationship
+CREATE TABLE Doctor_Patient (
+    dno INT,  -- Foreign key referencing Doctor
+    pno INT,  -- Foreign key referencing Patient
+    PRIMARY KEY (dno, pno),
+    FOREIGN KEY (dno) REFERENCES Doctor(dno) ON DELETE CASCADE,
+    FOREIGN KEY (pno) REFERENCES Patient(pno) ON DELETE CASCADE
+);
+
+-- Inserting sample data into Doctor table
+INSERT INTO Doctor (dno, dname, addr, phone_no, specialization)
+VALUES
+(1, 'Dr. Manish Verma', 'Alandi', '1234567890', 'Neurologist'),
+(2, 'Dr. Meera Sharma', 'Pune', '9876543210', 'Cardiologist'),
+(3, 'Dr. Ramesh Kumar', 'Alandi', '1029384756', 'General Physician'),
+(4, 'Dr. Mohan Rao', 'Nashik', '1122334455', 'Orthopedic'),
+(5, 'Dr. Mahesh Deshmukh', 'Alandi', '2233445566', 'Neurologist');
+
+-- Inserting sample data into Patient table
+INSERT INTO Patient (pno, pat_name, city, disease)
+VALUES
+(1, 'Suresh Patil', 'Alandi', 'Fever'),
+(2, 'Rajesh Yadav', 'Nashik', 'Cold'),
+(3, 'Amit Sharma', 'Pune', 'Fever'),
+(4, 'Prakash Joshi', 'Alandi', 'Headache'),
+(5, 'Kiran Deshmukh', 'Nashik', 'Fever'),
+(6, 'Shubham Kulkarni', 'Pune', 'Fever');
+
+-- Inserting sample data into Doctor_Patient table to represent the many-to-many relationship
+INSERT INTO Doctor_Patient (dno, pno)
+VALUES
+(1, 1),  -- Dr. Manish Verma and Suresh Patil
+(1, 3),  -- Dr. Manish Verma and Amit Sharma
+(2, 2),  -- Dr. Meera Sharma and Rajesh Yadav
+(3, 4),  -- Dr. Ramesh Kumar and Prakash Joshi
+(4, 5),  -- Dr. Mohan Rao and Kiran Deshmukh
+(5, 6);  -- Dr. Mahesh Deshmukh and Shubham Kulkarni
+
+--1
+SELECT dname
+FROM Doctor
+WHERE dname LIKE 'M%';
+
+--2
+SELECT COUNT(*) AS neurologist_count
+FROM Doctor
+WHERE specialization = 'Neurologist';
+
+--3
+SELECT pat_name
+FROM Patient
+WHERE disease = 'Fever';
+
+--4
+SELECT dname, specialization, phone_no
+FROM Doctor
+WHERE addr = 'Alandi';
+
+--B
+CREATE OR REPLACE FUNCTION get_patients_from_nashik()
+RETURNS TABLE(pno INT, pat_name VARCHAR, city VARCHAR, disease VARCHAR) AS $$
+DECLARE
+    patient_cursor CURSOR FOR
+        SELECT pno, pat_name, city, disease
+        FROM Patient
+        WHERE city = 'Nashik';
+BEGIN
+    -- Open the cursor
+    OPEN patient_cursor;
+
+    -- Loop through the cursor and return each row
+    LOOP
+        FETCH patient_cursor INTO pno, pat_name, city, disease;
+        EXIT WHEN NOT FOUND;  -- Exit when no more records are found
+
+        -- Return the current row
+        RETURN NEXT;
+    END LOOP;
+
+    -- Close the cursor
+    CLOSE patient_cursor;
+
+    RETURN;  -- End the function
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_patients_from_nashik();
